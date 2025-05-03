@@ -1,0 +1,68 @@
+eth1.network
+--------------------
+
+# This can be any public reachable interface
+# basically the one connected to the internet (native or bridged)
+[Match]
+Name=eth1
+
+[Network]
+# your normal interface address example: 10.1.1.2/24
+Address=<LOCAL_IPV4>/<NETMASK> 
+Gateway=<LOCAL_IPV4_GW> # local ip gw e.g 10.1.1.1
+
+# below is tunnel specific
+Tunnel=he6
+# One of the tunnel routed ipv6 address (e.g. 2001:470:xxx::1/64 or /48)
+Address=<ROUTED_IPV6_ADDRESS> 
+
+---------------------
+
+he.netdev
+
+# Define and create tunnel interface
+[Match]
+
+[NetDev]
+Name=he6
+Kind=sit
+MTUBytes=1480
+
+[Tunnel]
+Remote=<SERVER_IPV4_ADDRESS>
+Local=<LOCAL_IPV4>
+TTL=255
+
+---------------------------
+
+he.network
+
+# This is your tunnel network configuration
+[Match]
+Name=he6
+
+[Network]
+Address=<CLIENT_IPV6_ADDRESS>
+Gateway=<SERVER_IPV6_ADDRESS>
+
+# optional ip forward
+IPForward=yes 
+
+# Policy based routes below are only required if you have existing ipv6 setup 
+# and want to ensure incoming routing works properly
+
+[Route]
+Gateway=<SERVER_IPV6_ADDRESS>
+Destination=::/0
+Table=200
+Metric=20
+
+[RoutingPolicyRule]
+Table=200
+Family=ipv6
+From=<CLIENT_IPV6_ADDRESS>
+
+[RoutingPolicyRule]
+Table=200
+Family=ipv6
+From=<ROUTED_IPV6_PREFIX> 
